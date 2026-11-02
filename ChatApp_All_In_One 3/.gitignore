@@ -1,0 +1,22 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+
+# Django
+.env
+.env.*
+!.env.example
+db.sqlite3
+media/
+staticfiles/
+
+# Android
+.gradle/
+build/
+local.properties
+*.jks
+*.keystore
+
+# Mac
+.DS_Store
