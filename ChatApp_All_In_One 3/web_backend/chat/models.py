@@ -126,3 +126,43 @@ class UserReport(models.Model):
     details = models.TextField(max_length=1000, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_reviewed = models.BooleanField(default=False)
+class GroupInvitation(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name='invitations'
+    )
+    invited_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='group_invitations_sent'
+    )
+    invited_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='group_invitations_received'
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['conversation', 'invited_user'],
+                name='unique_group_invitation'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.invited_user} - {self.conversation}'
