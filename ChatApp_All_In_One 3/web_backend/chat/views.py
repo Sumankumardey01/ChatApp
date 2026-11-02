@@ -10,6 +10,9 @@ from django.views.decorators.http import require_GET, require_POST
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
+
+from django.utils import timezone
+
 from .forms import RegisterForm, StartConversationForm
 from .models import (
     Conversation,
@@ -491,3 +494,83 @@ def status_viewers(request, status_id):
         return JsonResponse({'error': 'Your status was not found.'}, status=404)
     viewers = status.viewers.values('id', 'username')
     return JsonResponse({'viewers': list(viewers), 'count': status.viewers.count()})
+
+@login_required
+@require_POST
+def send_group_invitation(request, conversation_id):
+    user_id = request.POST.get("user_id")
+
+    if not user_id:
+        return JsonResponse({"error": "User ID is required."}, status=400)
+
+    conversation = get_user_conversation(request.user, conversation_id)
+
+    if not conversation or not conversation.is_group:
+        return JsonResponse({"error": "Group not found."}, status=404)
+
+    if not conversation.admins.filter(id=request.user.id).exists():
+        return JsonResponse({"error": "Only group admins can invite members."}, status=403)
+
+    invited_user = User.objects.filter(id=user_id).first()
+
+    if not invited_user:
+        return JsonResponse({"error": "User not found."}, status=404)
+
+    if conversation.participants.filter(id=invited_user.id).exists():
+        return JsonResponse({"error": "User is already a group member."}, status=400)
+
+    if Block.objects.filter(
+        blocker=request.user, blocked=invited_user
+    ).exists() or Block.objects.filter(
+        blocker=invited_user, blocked=request.user
+    ).exists():
+        return JsonResponse({"error": "Invitation cannot be sent due to blocking."}, status=403)
+
+    invitation, created = GroupInvitation.objects.get_or_create(
+        conversation=conversation,
+        invited_user=invited_user,
+        defaults={"invited_by": request.user}
+    )
+
+    if not created and invitation.status != "pending":
+        invitation.invited_by = request.user
+        invitation.status = "pending"
+        invitation.responded_at = None
+        invitation.save()
+
+    return JsonResponse({
+        "success": True,
+        "message": "Invitation sent." if created else "Invitation is pending."
+    })
+
+
+@login_required
+@require_POST
+def respond_group_invitation(request, invitation_id):
+    action = request.POST.get("action")
+
+    if action not in ["accept", "reject"]:
+        return JsonResponse({"error": "Invalid action."}, status=400)
+
+    invitation = GroupInvitation.objects.filter(
+        id=invitation_id,
+        invited_user=request.user,
+        status="pending"
+    ).first()
+
+    if not invitation:
+        return JsonResponse({"error": "Invitation not found."}, status=404)
+
+    if action == "accept":
+        invitation.conversation.participants.add(request.user)
+        invitation.status = "accepted"
+    else:
+        invitation.status = "rejected"
+
+    invitation.responded_at = timezone.now()
+    invitation.save()
+
+    return JsonResponse({
+        "success": True,
+        "message": "Invitation " + invitation.status + "."
+    })
