@@ -1,0 +1,4 @@
+# Optional ASGI server for WebSocket support.
+# Install after the basic Django setup succeeds.
+daphne>=4.1,<5
+Pillow>=10.4,<13

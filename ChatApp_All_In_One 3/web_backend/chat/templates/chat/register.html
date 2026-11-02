@@ -1,0 +1,26 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ChatApp | Create account</title>
+<link rel="stylesheet" href="{% static 'chat/css/style.css' %}">
+<style>
+.auth-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;background:#fffafd}
+.auth-card{width:min(460px,100%);padding:34px;border:1px solid #f0e1f0;border-radius:24px;background:white;box-shadow:0 8px 30px rgba(111,76,130,.08)}
+.auth-card h1{color:#50385e}.auth-card input{box-sizing:border-box;width:100%;padding:13px;margin:8px 0 16px;border:1px solid #ead6e9;border-radius:12px}
+.auth-card button{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(120deg,#f5d5ec,#dfd2ff);color:#62436e;font-weight:700;cursor:pointer}
+.auth-card a{color:#79518b}.auth-card ul{padding-left:20px;color:#98607d}
+</style></head>
+<body><main class="auth-wrap"><form class="auth-card" method="post">
+<h1>♡ Create your account</h1><p>Join your ChatApp conversations.</p>
+{% csrf_token %}
+{% for field in form %}
+<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+{{ field }}
+{% if field.errors %}<ul>{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+{% endfor %}
+{% if form.non_field_errors %}<ul>{{ form.non_field_errors }}</ul>{% endif %}
+<button type="submit">Create account</button>
+<p>Already registered? <a href="{% url 'login' %}">Sign in</a></p>
+</form></main></body></html>

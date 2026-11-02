@@ -1,0 +1,74 @@
+CHATAPP — EXPANDED WEB + ANDROID APPLICATION FOUNDATION
+
+This single ZIP contains the Django web backend, existing pastel pink/lavender
+web UI, Kotlin Android WebView starter, configuration, and documentation.
+
+FEATURES IN THIS BUILD
+- Account registration, login and logout (Django authentication)
+- One-to-one conversations and text messages
+- Conversation membership authorization
+- Unread counts and read marking
+- WebSocket message broadcast and typing events; HTTP polling fallback
+- Group conversation data model and group/member management API
+- Image/video/audio/document upload API (25 MB per file limit)
+- Edit/delete/forward message API and emoji reaction data/API
+- User profile and avatar update API
+- Block/unblock API and privacy preference fields
+- 24-hour status creation/list/view API
+- Chat preferences (theme, font size, notification preference)
+- Call session and signalling-record API foundation
+- Django admin registration for app data
+- MySQL configuration option; SQLite remains safe default
+- Android Studio Kotlin WebView starter
+
+IMPORTANT IMPLEMENTATION LIMITS
+This is an expanded development build, not a production-ready WhatsApp clone.
+Some features have backend models/endpoints but are not yet connected to finished
+web/mobile UI. Call signalling records do not implement the WebRTC media connection.
+There is no configured Firebase push delivery, no reviewed end-to-end encryption,
+no native Android chat UI, and no production deployment. Do not use it for sensitive
+communications or public launch before security review and testing.
+
+MAC SETUP — WEB BACKEND
+1. Extract this ZIP. Keep your old project and database as a backup.
+2. Open Terminal and enter:
+   cd ~/Downloads/ChatApp_All_In_One/web_backend
+3. Create and activate a virtual environment:
+   python3 -m venv venv
+   source venv/bin/activate
+4. Install packages:
+   python -m pip install --upgrade pip
+   python -m pip install -r requirements.txt
+5. Create database migration files for this expanded version:
+   python manage.py makemigrations chat
+   python manage.py migrate
+6. Check the project:
+   python manage.py check
+7. Create an admin account if needed:
+   python manage.py createsuperuser
+8. Start the regular development server:
+   python manage.py runserver
+9. Open http://127.0.0.1:8000/
+
+WEBSOCKETS
+Install optional ASGI server:
+   python -m pip install -r requirements-asgi.txt
+Run:
+   python -m daphne -b 127.0.0.1 -p 8000 config.asgi:application
+The default in-memory channel layer is local/single-process only. For multi-process
+or production deployments configure Redis and a production channel layer.
+
+MYSQL (OPTIONAL)
+SQLite is the default. To use MySQL, create a NEW empty database first, copy
+.env.example to .env, set DB_ENGINE=mysql and fill DB_NAME, DB_USER, DB_PASSWORD,
+DB_HOST and DB_PORT. Then install requirements-mysql.txt and run migrations.
+Never point this build at your only copy of an existing database. Back it up first.
+
+ANDROID
+Open android_app in Android Studio and allow Gradle sync. The supplied Kotlin app
+is a WebView wrapper, not a native chat client. The emulator uses 10.0.2.2 to reach
+the Mac. A physical phone needs the Mac's LAN IP and same Wi-Fi network. Use HTTPS
+and secure deployment configuration before public release.
+
+DOCUMENTATION
+See docs/FEATURE_STATUS.md and docs/API_GUIDE.md for feature coverage and API routes.
