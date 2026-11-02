@@ -28,4 +28,14 @@ urlpatterns = [
     path("api/messages/<int:message_id>/hide/", views.hide_message, name="hide_message"),
     path("api/reports/create/", views.report_content, name="report_content"),
     path("api/status/<int:status_id>/viewers/", views.status_viewers, name="status_viewers"),
+    path(
+    "api/groups/<int:conversation_id>/invite/",
+    views.send_group_invitation,
+    name="send_group_invitation"
+    ),
+    path(
+    "api/group-invitations/<int:invitation_id>/respond/",
+    views.respond_group_invitation,
+    name="respond_group_invitation"
+    ),
 ]
